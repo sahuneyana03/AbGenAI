@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AbGenAI — De Novo Antibody Design Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #05080f;
+    --bg2: #080d1a;
+    --bg3: #0c1428;
+    --card: #0f1a2e;
+    --card2: #111f38;
+    --border: #1a2d50;
+    --border2: #203660;
+    --teal: #00d4c8;
+    --teal2: #00a89e;
+    --teal3: #007a72;
+    --blue: #3a7bd5;
+    --blue2: #2563b0;
+    --gold: #f4c542;
+    --green: #22c98c;
+    --red: #f05252;
+    --orange: #f0a050;
+    --text: #e8f0fe;
+    --text2: #8ba7d0;
+    --text3: #4a6080;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Outfit', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); overflow-x: hidden; min-height: 100vh; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 240px; min-width: 240px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 0; overflow-y: auto; }
+  .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+  /* ── SIDEBAR ── */
+  .logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+  .logo-mark { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--teal), var(--blue)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .logo-name { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); }
+  .logo-sub { font-size: 10px; color: var(--text3); font-family: var(--mono); letter-spacing: 1px; }
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-section { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: var(--text3); padding: 12px 8px 6px; text-transform: uppercase; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text2); margin-bottom: 2px; transition: all .18s; border: 1px solid transparent; }
+  .nav-item:hover { background: var(--card); color: var(--text); }
+  .nav-item.active { background: linear-gradient(135deg, rgba(0,212,200,.12), rgba(58,123,213,.1)); color: var(--teal); border-color: rgba(0,212,200,.2); }
+  .nav-item .icon { font-size: 15px; width: 20px; text-align: center; }
+  .nav-badge { margin-left: auto; background: var(--teal3); color: var(--teal); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; font-family: var(--mono); }
+  .sidebar-bottom { padding: 16px 12px; border-top: 1px solid var(--border); }
+  .user-card { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+  .user-avatar { width: 30px; height: 30px; background: linear-gradient(135deg, #3a7bd5, #00d4c8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .user-info { flex: 1; } .user-name { font-size: 12px; font-weight: 600; } .user-plan { font-size: 10px; color: var(--text3); }
+  .plan-badge { font-size: 9px; background: rgba(244,197,66,.15); color: var(--gold); border: 1px solid rgba(244,197,66,.3); padding: 2px 6px; border-radius: 8px; font-weight: 700; }
+
+  /* ── TOP BAR ── */
+  .topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .page-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .breadcrumb { font-size: 12px; color: var(--text3); }
+  .topbar-actions { display: flex; align-items: center; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .18s; font-family: var(--sans); }
+  .btn-primary { background: linear-gradient(135deg, var(--teal), var(--blue)); color: #fff; }
+  .btn-primary:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,212,200,.25); }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
+  .btn-ghost:hover { background: var(--card); color: var(--text); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* ── CONTENT ── */
+  .content { padding: 28px; flex: 1; }
+
+  /* ── STATS ROW ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .stat-card.teal::before { background: linear-gradient(90deg, var(--teal), transparent); }
+  .stat-card.blue::before { background: linear-gradient(90deg, var(--blue), transparent); }
+  .stat-card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+  .stat-card.gold::before { background: linear-gradient(90deg, var(--gold), transparent); }
+  .stat-label { font-size: 11px; color: var(--text3); font-family: var(--mono); letter-spacing: .5px; margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
+  .stat-value.teal { color: var(--teal); } .stat-value.blue { color: var(--blue); }
+  .stat-value.green { color: var(--green); } .stat-value.gold { color: var(--gold); }
+  .stat-change { font-size: 11px; color: var(--green); font-family: var(--mono); }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── CARD ── */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .card-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card-body { padding: 20px; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 4px; padding: 16px 20px 0; border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+  .tab { padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text3); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .18s; white-space: nowrap; }
+  .tab:hover { color: var(--text2); }
+  .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .tab-content { display: none; } .tab-content.active { display: block; }
+
+  /* ── PIPELINE VISUAL ── */
+  .pipeline { display: flex; align-items: center; gap: 0; margin: 20px 0; overflow-x: auto; padding-bottom: 4px; }
+  .pipe-step { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .pipe-box { background: var(--card2); border: 1px solid var(--border2); border-radius: 10px; padding: 12px 16px; text-align: center; min-width: 110px; position: relative; transition: all .2s; }
+  .pipe-box:hover { border-color: var(--teal); box-shadow: 0 0 16px rgba(0,212,200,.15); }
+  .pipe-box.active { border-color: var(--teal); background: rgba(0,212,200,.07); }
+  .pipe-box.done { border-color: var(--green); background: rgba(34,201,140,.07); }
+  .pipe-box.running { border-color: var(--gold); background: rgba(244,197,66,.07); animation: pulse-border 1.5s infinite; }
+  @keyframes pulse-border { 0%,100%{ box-shadow: 0 0 0 0 rgba(244,197,66,.4); } 50%{ box-shadow: 0 0 0 6px rgba(244,197,66,0); } }
+  .pipe-icon { font-size: 20px; margin-bottom: 6px; }
+  .pipe-label { font-size: 10px; font-weight: 700; color: var(--text); letter-spacing: .3px; }
+  .pipe-sublabel { font-size: 9px; color: var(--text3); margin-top: 2px; }
+  .pipe-arrow { color: var(--border2); font-size: 18px; padding: 0 4px; flex-shrink: 0; }
+  .pipe-status { font-size: 9px; margin-top: 4px; font-family: var(--mono); }
+  .pipe-status.done { color: var(--green); }
+  .pipe-status.running { color: var(--gold); }
+  .pipe-status.waiting { color: var(--text3); }
+
+  /* ── TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th { background: var(--bg3); color: var(--text3); font-size: 10px; font-weight: 700; letter-spacing: .8px; padding: 10px 14px; text-align: left; text-transform: uppercase; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .data-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: middle; }
+  .data-table tr:hover td { background: rgba(255,255,255,.02); color: var(--text); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .seq-mono { font-family: var(--mono); font-size: 11px; letter-spacing: .5px; color: var(--teal); }
+  .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: 11px; font-weight: 700; font-family: var(--mono); }
+  .rank-1 { background: rgba(244,197,66,.2); color: var(--gold); border: 1px solid rgba(244,197,66,.4); }
+  .rank-2 { background: rgba(58,123,213,.2); color: var(--blue); border: 1px solid rgba(58,123,213,.4); }
+  .rank-3 { background: rgba(0,212,200,.15); color: var(--teal); border: 1px solid rgba(0,212,200,.3); }
+  .rank-n { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+  .score-pill { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; font-family: var(--mono); }
+  .score-high { background: rgba(34,201,140,.15); color: var(--green); border: 1px solid rgba(34,201,140,.3); }
+  .score-med { background: rgba(244,197,66,.15); color: var(--gold); border: 1px solid rgba(244,197,66,.3); }
+  .score-low { background: rgba(240,82,82,.12); color: var(--red); border: 1px solid rgba(240,82,82,.25); }
+  .tap-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 2px; }
+  .tap-pass { background: var(--green); }
+  .tap-warn { background: var(--gold); }
+  .tap-fail { background: var(--red); }
+
+  /* ── RADAR CHART ── */
+  .radar-wrap { position: relative; width: 180px; height: 180px; margin: 0 auto; }
+  svg.radar { overflow: visible; }
+
+  /* ── PROGRESS ── */
+  .progress-bar { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+  .progress-teal { background: linear-gradient(90deg, var(--teal), var(--blue)); }
+  .progress-green { background: var(--green); }
+  .progress-gold { background: var(--gold); }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 18px; }
+  .form-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 7px; display: block; }
+  .form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 13px; font-family: var(--sans); outline: none; transition: border .18s; }
+  .form-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,212,200,.1); }
+  .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238ba7d0' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  .upload-zone { border: 2px dashed var(--border2); border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; transition: all .2s; }
+  .upload-zone:hover { border-color: var(--teal); background: rgba(0,212,200,.04); }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-text { font-size: 13px; color: var(--text2); } .upload-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .toggle-label { font-size: 13px; } .toggle-sub { font-size: 11px; color: var(--text3); }
+  .toggle { width: 40px; height: 22px; background: var(--border2); border-radius: 11px; cursor: pointer; position: relative; transition: background .2s; flex-shrink: 0; }
+  .toggle.on { background: var(--teal3); }
+  .toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: left .2s; }
+  .toggle.on::after { left: 21px; }
+  .range-input { width: 100%; accent-color: var(--teal); }
+
+  /* ── CANDIDATE DETAIL ── */
+  .detail-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 420px; background: var(--bg2); border-left: 1px solid var(--border); z-index: 100; transform: translateX(100%); transition: transform .3s ease; overflow-y: auto; }
+  .detail-panel.open { transform: translateX(0); }
+  .detail-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .close-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; cursor: pointer; color: var(--text2); font-size: 16px; }
+  .detail-body { padding: 20px 24px; }
+  .detail-section { margin-bottom: 24px; }
+  .detail-section-title { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
+  .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .score-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .score-item-label { font-size: 10px; color: var(--text3); margin-bottom: 4px; font-family: var(--mono); }
+  .score-item-val { font-size: 18px; font-weight: 800; font-family: var(--mono); }
+
+  /* ── NOTIFICATION ── */
+  .notif { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--card2); border: 1px solid var(--teal3); border-radius: 10px; padding: 12px 20px; display: flex; align-items: center; gap: 10px; font-size: 13px; z-index: 200; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .notif.show { opacity: 1; }
+
+  /* ── LOADING SPINNER ── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--teal); border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+
+  /* ── MOLECULE BG ANIMATION ── */
+  .mol-bg { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .mol-dot { position: absolute; background: rgba(0,212,200,.06); border-radius: 50%; animation: float-mol linear infinite; }
+  @keyframes float-mol { 0%{ transform: translate(0,0) scale(1); opacity:.3; } 50%{ opacity:.1; } 100%{ transform: translate(var(--tx),var(--ty)) scale(1.2); opacity:0; } }
+
+  /* ── SPECIFIC SCREENS ── */
+  .hero-banner { background: linear-gradient(135deg, rgba(0,212,200,.08) 0%, rgba(58,123,213,.08) 100%); border: 1px solid rgba(0,212,200,.15); border-radius: 14px; padding: 24px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+  .hero-text h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .hero-text p { font-size: 13px; color: var(--text2); max-width: 420px; line-height: 1.6; }
+  .hero-stats { display: flex; gap: 32px; flex-shrink: 0; }
+  .hero-stat { text-align: center; }
+  .hero-stat-val { font-size: 26px; font-weight: 800; color: var(--teal); font-family: var(--mono); }
+  .hero-stat-label { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+  .campaign-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; cursor: pointer; transition: all .2s; }
+  .campaign-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .campaign-card.active-camp { border-color: var(--teal); background: rgba(0,212,200,.04); }
+  .camp-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+  .camp-name { font-size: 14px; font-weight: 700; }
+  .camp-target { font-size: 11px; color: var(--teal); font-family: var(--mono); margin-top: 2px; }
+  .status-badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 700; white-space: nowrap; }
+  .status-complete { background: rgba(34,201,140,.15); color: var(--green); border: 1px solid rgba(34,201,140,.3); }
+  .status-running { background: rgba(244,197,66,.15); color: var(--gold); border: 1px solid rgba(244,197,66,.3); }
+  .status-draft { background: rgba(138,167,208,.1); color: var(--text3); border: 1px solid var(--border); }
+  .camp-meta { display: flex; gap: 16px; font-size: 11px; color: var(--text3); }
+
+  .filter-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+  .filter-chip { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); color: var(--text3); transition: all .15s; }
+  .filter-chip:hover { border-color: var(--border2); color: var(--text2); }
+  .filter-chip.on { background: rgba(0,212,200,.1); border-color: var(--teal); color: var(--teal); }
+  .search-box { flex: 1; max-width: 280px; position: relative; }
+  .search-box input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px 7px 32px; color: var(--text); font-size: 12px; font-family: var(--sans); outline: none; }
+  .search-box::before { content: '🔍'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; }
+
+  /* ── BUSINESS MODEL ── */
+  .bm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .bm-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .bm-icon { font-size: 22px; margin-bottom: 8px; }
+  .bm-title { font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  .bm-text { font-size: 11px; color: var(--text3); line-height: 1.6; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
+  .price-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; text-align: center; position: relative; transition: all .2s; }
+  .price-card:hover { border-color: var(--border2); transform: translateY(-3px); }
+  .price-card.featured { border-color: var(--teal); background: rgba(0,212,200,.05); }
+  .price-card.featured::before { content: 'POPULAR'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--teal); color: var(--bg); font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 10px; letter-spacing: 1px; }
+  .price-name { font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
+  .price-val { font-size: 26px; font-weight: 800; color: var(--text); font-family: var(--mono); }
+  .price-period { font-size: 11px; color: var(--text3); }
+  .price-features { margin-top: 12px; text-align: left; }
+  .price-feat { font-size: 11px; color: var(--text3); padding: 4px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+  .price-feat::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  /* ── MONOSPACE SEQUENCE ── */
+  .seq-display { font-family: var(--mono); font-size: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 14px; line-height: 2; letter-spacing: 1px; word-break: break-all; }
+  .cdr-highlight { background: rgba(0,212,200,.2); color: var(--teal); border-radius: 3px; padding: 0 2px; }
+
+  /* ── LOGIN ── */
+  .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); }
+  .login-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 48px 40px; width: 420px; }
+  .login-logo { text-align: center; margin-bottom: 32px; }
+  .login-logo-mark { width: 56px; height: 56px; background: linear-gradient(135deg, var(--teal), var(--blue)); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 12px; }
+  .login-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: var(--text3); }
+  .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; font-size: 11px; color: var(--text3); }
+  .divider::before,.divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .social-btn { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 13px; color: var(--text2); cursor: pointer; font-family: var(--sans); font-weight: 600; transition: all .18s; margin-bottom: 10px; }
+  .social-btn:hover { border-color: var(--border2); color: var(--text); }
+  .forgot { font-size: 12px; color: var(--teal); text-align: right; margin-top: -12px; margin-bottom: 20px; cursor: pointer; }
+  .signup-link { text-align: center; font-size: 12px; color: var(--text3); margin-top: 20px; }
+  .signup-link span { color: var(--teal); cursor: pointer; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- Floating molecules background -->
+<div class="mol-bg" id="molBg"></div>
+
+<!-- ── LOGIN SCREEN ──────────────────────────────────────────── -->
+<div id="loginScreen" class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-mark">🧬</div>
+      <div class="login-title">AbGenAI</div>
+      <div class="login-sub">AI-Powered Antibody & Peptide Design</div>
+    </div>
+    <button class="social-btn" onclick="loginWith('Google')">🔵 &nbsp; Continue with Google</button>
+    <button class="social-btn" onclick="loginWith('Microsoft')">🟦 &nbsp; Continue with Microsoft SSO</button>
+    <div class="divider">or sign in with email</div>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input class="form-input" type="email" placeholder="researcher@biopharma.com" value="researcher@biopharma.com"/>
+    </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" placeholder="••••••••" value="password"/>
+    </div>
+    <div class="forgot">Forgot password?</div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="enterApp()">Sign In to AbGenAI →</button>
+    <div class="signup-link">New to AbGenAI? <span onclick="enterApp()">Start free trial</span></div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ──────────────────────────────────────────────── -->
+<div id="mainApp" class="app" style="display:none">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <div class="logo-icon">🧬</div>
+        <div class="logo-name">AbGenAI</div>
+      </div>
+      <div class="logo-sub">v1.0 · PROFESSIONAL</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">Workspace</div>
+      <div class="nav-item active" onclick="showTab('dashboard')"><span class="icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="showTab('campaigns')"><span class="icon">🗂️</span> Campaigns <span class="nav-badge">3</span></div>
+      <div class="nav-item" onclick="showTab('generate')"><span class="icon">⚗️</span> New Generation</div>
+      <div class="nav-item" onclick="showTab('results')"><span class="icon">🔬</span> Results <span class="nav-badge">500</span></div>
+      <div class="nav-section">Analysis</div>
+      <div class="nav-item" onclick="showTab('analytics')"><span class="icon">📈</span> Analytics</div>
+      <div class="nav-item" onclick="showTab('structure')"><span class="icon">🧪</span> Structure Viewer</div>
+      <div class="nav-section">Platform</div>
+      <div class="nav-item" onclick="showTab('business')"><span class="icon">💼</span> Business Model</div>
+      <div class="nav-item" onclick="showTab('api')"><span class="icon">🔌</span> API Access</div>
+      <div class="nav-item" onclick="showTab('settings')"><span class="icon">⚙️</span> Settings</div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-card">
+        <div class="user-avatar">DR</div>
+        <div class="user-info">
+          <div class="user-name">Dr. Researcher</div>
+          <div class="user-plan"><span class="plan-badge">PRO</span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="pageTitle">📊 Dashboard</div>
+        <div class="breadcrumb" id="breadcrumb">AbGenAI / Workspace / Dashboard</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="showNotif('📥 Export package prepared')">📥 Export</button>
+        <button class="btn btn-primary btn-sm" onclick="showTab('generate')">＋ New Campaign</button>
+      </div>
+    </div>
+
+    <!-- TABS WITHIN CONTENT -->
+    <div class="tabs" id="subTabs" style="display:none">
+      <div class="tab active" onclick="switchSubTab(this,'binding')">Binding Affinity</div>
+      <div class="tab" onclick="switchSubTab(this,'develop')">Developability</div>
+      <div class="tab" onclick="switchSubTab(this,'diversity')">Sequence Diversity</div>
+      <div class="tab" onclick="switchSubTab(this,'compare')">Benchmark Compare</div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="content" id="contentArea">
+      <!-- Dashboard rendered by JS -->
+    </div>
+  </main>
+</div>
+
+<!-- CANDIDATE DETAIL PANEL -->
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <div>
+      <div style="font-size:14px;font-weight:800" id="detailName">Candidate #1</div>
+      <div style="font-size:11px;color:var(--teal);margin-top:2px;font-family:var(--mono)" id="detailId">AbG-HER2-001</div>
+    </div>
+    <div class="close-btn" onclick="closeDetail()">✕</div>
+  </div>
+  <div class="detail-body">
+    <div class="detail-section">
+      <div class="detail-section-title">CDR-H3 Sequence</div>
+      <div class="seq-display"><span style="color:var(--text3)">...EVQLVESGG-</span><span class="cdr-highlight">ARTYYCARDLGGYYSSGYDY</span><span style="color:var(--text3)">-WGQGTLVTVSS...</span></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px">CDR-H3 highlighted (IMGT numbering: pos 95–102)</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Binding & Structural Scores</div>
+      <div class="score-grid">
+        <div class="score-item"><div class="score-item-label">Delta-G</div><div class="score-item-val" style="color:var(--teal)">-11.2</div><div style="font-size:10px;color:var(--text3)">kcal/mol</div></div>
+        <div class="score-item"><div class="score-item-label">AlphaFold pTM</div><div class="score-item-val" style="color:var(--green)">0.87</div><div style="font-size:10px;color:var(--text3)">confidence</div></div>
+        <div class="score-item"><div class="score-item-label">ipTM</div><div class="score-item-val" style="color:var(--green)">0.79</div><div style="font-size:10px;color:var(--text3)">interface</div></div>
+        <div class="score-item"><div class="score-item-label">Rank</div><div class="score-item-val" style="color:var(--gold)">#1</div><div style="font-size:10px;color:var(--text3)">of 500</div></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">TAP Developability Profile</div>
+      <div style="display:flex;justify-content:center;margin-bottom:12px">
+        <svg width="180" height="180" viewBox="-90 -90 180 180">
+          <g opacity="0.15">
+            <polygon points="0,-60 57,-19 35,49 -35,49 -57,-19" fill="none" stroke="#8ba7d0" stroke-width="1"/>
+            <polygon points="0,-45 43,-14 26,37 -26,37 -43,-14" fill="none" stroke="#8ba7d0" stroke-width="1"/>
+            <polygon points="0,-30 29,-9 18,25 -18,25 -29,-9" fill="none" stroke="#8ba7d0" stroke-width="1"/>
+            <polygon points="0,-15 14,-5 9,12 -9,12 -14,-5" fill="none" stroke="#8ba7d0" stroke-width="1"/>
+          </g>
+          <line x1="0" y1="0" x2="0" y2="-60" stroke="#8ba7d0" stroke-width="1" opacity="0.3"/>
+          <line x1="0" y1="0" x2="57" y2="-19" stroke="#8ba7d0" stroke-width="1" opacity="0.3"/>
+          <line x1="0" y1="0" x2="35" y2="49" stroke="#8ba7d0" stroke-width="1" opacity="0.3"/>
+          <line x1="0" y1="0" x2="-35" y2="49" stroke="#8ba7d0" stroke-width="1" opacity="0.3"/>
+          <line x1="0" y1="0" x2="-57" y2="-19" stroke="#8ba7d0" stroke-width="1" opacity="0.3"/>
+          <!-- Data polygon (78%, 88%, 65%, 72%, 81%) -->
+          <polygon points="0,-46.8 50.2,-16.7 22.75,31.85 -25.2,35.28 -46.17,-15.39" fill="rgba(0,212,200,0.2)" stroke="#00d4c8" stroke-width="2"/>
+          <circle cx="0" cy="-46.8" r="4" fill="#00d4c8"/>
+          <circle cx="50.2" cy="-16.7" r="4" fill="#00d4c8"/>
+          <circle cx="22.75" cy="31.85" r="4" fill="#00d4c8"/>
+          <circle cx="-25.2" cy="35.28" r="4" fill="#00d4c8"/>
+          <circle cx="-46.17" cy="-15.39" r="4" fill="#00d4c8"/>
+          <text x="0" y="-68" text-anchor="middle" fill="#8ba7d0" font-size="9" font-family="Space Mono">Hydrophob.</text>
+          <text x="70" y="-19" text-anchor="start" fill="#8ba7d0" font-size="9" font-family="Space Mono">pI</text>
+          <text x="40" y="62" text-anchor="middle" fill="#8ba7d0" font-size="9" font-family="Space Mono">CamSol</text>
+          <text x="-40" y="62" text-anchor="middle" fill="#8ba7d0" font-size="9" font-family="Space Mono">PSR</text>
+          <text x="-76" y="-19" text-anchor="end" fill="#8ba7d0" font-size="9" font-family="Space Mono">Charge</text>
+        </svg>
+      </div>
+      <div style="font-size:11px">
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3)">Hydrophobicity</span><span class="score-pill score-high">PASS 78%</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3)">Isoelectric Point</span><span class="score-pill score-high">PASS 8.2</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3)">CamSol Aggregation</span><span class="score-pill score-med">WARN 1.1</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3)">Poly-specificity</span><span class="score-pill score-high">PASS Low</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0"><span style="color:var(--text3)">Net Charge pH7.4</span><span class="score-pill score-high">PASS +0.8</span></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center" onclick="showNotif('✅ Added to shortlist')">⭐ Shortlist</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;justify-content:center" onclick="showNotif('📤 FASTA exported')">📤 Export FASTA</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION TOAST -->
+<div class="notif" id="notif">
+  <span class="spinner"></span>
+  <span id="notifText">Processing...</span>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────
+let currentTab = 'dashboard';
+let subTab = 'binding';
+let generating = false;
+let genProgress = 0;
+let genTimer = null;
+
+// ── CANDIDATE DATA ─────────────────────────────────────────────
+const candidates = [
+  { id:'AbG-HER2-001', rank:1, cdrhThree:'ARTYYCARDLGGYYSSGYDY', dg:-11.2, ptm:0.87, tap:[true,true,false,true,true], tapScore:4, pi:8.2, hydro:-0.12, camSol:1.1, status:'shortlisted' },
+  { id:'AbG-HER2-002', rank:2, cdrhThree:'QSTYYCASSRGYYSGFDY',   dg:-10.8, ptm:0.83, tap:[true,true,true,true,true],  tapScore:5, pi:7.8, hydro:-0.18, camSol:1.6, status:'reviewed' },
+  { id:'AbG-HER2-003', rank:3, cdrhThree:'RGSYYCARDHTTVVGTDY',   dg:-10.4, ptm:0.81, tap:[true,false,true,true,true],  tapScore:4, pi:6.9, hydro: 0.05, camSol:0.9, status:'' },
+  { id:'AbG-HER2-004', rank:4, cdrhThree:'LASYYCARGRMVPFYYYMD', dg:-10.1, ptm:0.79, tap:[true,true,true,false,true],  tapScore:4, pi:8.5, hydro:-0.08, camSol:1.3, status:'' },
+  { id:'AbG-HER2-005', rank:5, cdrhThree:'VSTYYCARDQPFYYYYGMD', dg:-9.8,  ptm:0.76, tap:[true,true,true,true,false], tapScore:4, pi:7.2, hydro:-0.22, camSol:1.4, status:'' },
+  { id:'AbG-HER2-006', rank:6, cdrhThree:'GKTYYCARVSSYYYAMDV',  dg:-9.5,  ptm:0.74, tap:[false,true,true,true,true],  tapScore:4, pi:9.1, hydro: 0.11, camSol:1.2, status:'' },
+  { id:'AbG-HER2-007', rank:7, cdrhThree:'YTTYYCARKLFYYYYGMT', dg:-9.2,  ptm:0.72, tap:[true,true,false,false,true], tapScore:3, pi:7.4, hydro: 0.03, camSol:0.8, status:'' },
+  { id:'AbG-HER2-008', rank:8, cdrhThree:'DRTYYCARDPGLYYYAMD',  dg:-9.0,  ptm:0.71, tap:[true,false,false,true,true],  tapScore:3, pi:6.6, hydro: 0.19, camSol:0.7, status:'' },
+];
+
+// ── MOLECULE BACKGROUND ───────────────────────────────────────
+function initMolBg() {
+  const bg = document.getElementById('molBg');
+  for(let i=0;i<12;i++){
+    const d = document.createElement('div');
+    const sz = 40+Math.random()*80;
+    d.className='mol-dot';
+    d.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--tx:${(Math.random()-0.5)*200}px;--ty:${(Math.random()-0.5)*200}px;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*6}s`;
+    bg.appendChild(d);
+  }
+}
+initMolBg();
+
+// ── LOGIN ─────────────────────────────────────────────────────
+function loginWith(p){ showNotif('🔐 Authenticating via '+p+'...'); setTimeout(enterApp,900); }
+function enterApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainApp').style.display='flex';
+  renderDashboard();
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function showTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const titles = { dashboard:'📊 Dashboard', campaigns:'🗂️ Campaigns', generate:'⚗️ New Generation', results:'🔬 Results', analytics:'📈 Analytics', structure:'🧪 Structure Viewer', business:'💼 Business Model', api:'🔌 API Access', settings:'⚙️ Settings' };
+  const crumbs = { dashboard:'AbGenAI / Workspace / Dashboard', campaigns:'AbGenAI / Campaigns', generate:'AbGenAI / Generate / New Campaign', results:'AbGenAI / HER2 Campaign / Results', analytics:'AbGenAI / HER2 Campaign / Analytics', structure:'AbGenAI / Structure Viewer', business:'AbGenAI / Business Model', api:'AbGenAI / Developer / API Access', settings:'AbGenAI / Settings' };
+  document.getElementById('pageTitle').textContent = titles[tab]||tab;
+  document.getElementById('breadcrumb').textContent = crumbs[tab]||'';
+  document.getElementById('subTabs').style.display = (tab==='results')?'flex':'none';
+  const renders = { dashboard:renderDashboard, campaigns:renderCampaigns, generate:renderGenerate, results:renderResults, analytics:renderAnalytics, structure:renderStructure, business:renderBusiness, api:renderAPI, settings:renderSettings };
+  if(renders[tab]) renders[tab](); else document.getElementById('contentArea').innerHTML='<div style="color:var(--text3);text-align:center;margin-top:60px;font-size:14px">Coming soon...</div>';
+}
+
+function switchSubTab(el,tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); subTab=tab; renderResults();
+}
+
+// ── NOTIFICATION ──────────────────────────────────────────────
+function showNotif(msg){
+  const n=document.getElementById('notif'); const t=document.getElementById('notifText');
+  t.textContent=msg; n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),2500);
+}
+
+// ── DETAIL PANEL ──────────────────────────────────────────────
+function openDetail(idx){
+  const c=candidates[idx];
+  document.getElementById('detailName').textContent=`Candidate #${c.rank}`;
+  document.getElementById('detailId').textContent=c.id;
+  document.getElementById('detailPanel').classList.add('open');
+}
+function closeDetail(){ document.getElementById('detailPanel').classList.remove('open'); }
+
+// ── RENDER DASHBOARD ─────────────────────────────────────────
+function renderDashboard(){
+  document.getElementById('contentArea').innerHTML=`
+    <div class="hero-banner">
+      <div class="hero-text">
+        <h2>🧬 Welcome back, Dr. Researcher</h2>
+        <p>Your HER2-targeting campaign has completed generation. <strong style="color:var(--teal)">500 candidates</strong> are ready for review. Top candidate achieves <strong style="color:var(--teal)">-11.2 kcal/mol</strong> binding affinity.</p>
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button class="btn btn-primary btn-sm" onclick="showTab('results')">View Results →</button>
+          <button class="btn btn-ghost btn-sm" onclick="showTab('generate')">＋ New Campaign</button>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-val">500</div><div class="hero-stat-label">Candidates<br>Generated</div></div>
+        <div class="hero-stat"><div class="hero-stat-val">-11.2</div><div class="hero-stat-label">Best delta-G<br>(kcal/mol)</div></div>
+        <div class="hero-stat"><div class="hero-stat-val">67%</div><div class="hero-stat-label">Developability<br>Pass Rate</div></div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card teal"><div class="stat-label">TOTAL CAMPAIGNS</div><div class="stat-value teal">3</div><div class="stat-change">↑ 2 active</div></div>
+      <div class="stat-card blue"><div class="stat-label">SEQUENCES GENERATED</div><div class="stat-value blue">1,247</div><div class="stat-change">↑ 500 this week</div></div>
+      <div class="stat-card green"><div class="stat-label">SHORTLISTED LEADS</div><div class="stat-value green">18</div><div class="stat-change">↑ 3 this session</div></div>
+      <div class="stat-card gold"><div class="stat-label">BEST BINDING AFFINITY</div><div class="stat-value gold">-11.2</div><div class="stat-change">kcal/mol · HER2 target</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">🔬 AI Pipeline — HER2 Campaign</div><span class="status-badge status-complete">COMPLETE</span></div>
+        <div class="card-body">
+          <div class="pipeline">
+            <div class="pipe-step"><div class="pipe-box done"><div class="pipe-icon">🎯</div><div class="pipe-label">Target Input</div><div class="pipe-sublabel">HER2 PDB:3N85</div></div><div class="pipe-status done">✓ Done</div></div>
+            <div class="pipe-arrow">→</div>
+            <div class="pipe-step"><div class="pipe-box done"><div class="pipe-icon">🤖</div><div class="pipe-label">PLM Embed</div><div class="pipe-sublabel">ESM-2 3B</div></div><div class="pipe-status done">✓ Done</div></div>
+            <div class="pipe-arrow">→</div>
+            <div class="pipe-step"><div class="pipe-box done"><div class="pipe-icon">💨</div><div class="pipe-label">Diffusion</div><div class="pipe-sublabel">500 seqs</div></div><div class="pipe-status done">✓ Done</div></div>
+            <div class="pipe-arrow">→</div>
+            <div class="pipe-step"><div class="pipe-box done"><div class="pipe-icon">🏗️</div><div class="pipe-label">AlphaFold2</div><div class="pipe-sublabel">Top 50</div></div><div class="pipe-status done">✓ Done</div></div>
+            <div class="pipe-arrow">→</div>
+            <div class="pipe-step"><div class="pipe-box done"><div class="pipe-icon">⚡</div><div class="pipe-label">Docking</div><div class="pipe-sublabel">Vina</div></div><div class="pipe-status done">✓ Done</div></div>
+            <div class="pipe-arrow">→</div>
+            <div class="pipe-step"><div class="pipe-box done"><div class="pipe-icon">📊</div><div class="pipe-label">TAP Score</div><div class="pipe-sublabel">Develop.</div></div><div class="pipe-status done">✓ Done</div></div>
+          </div>
+          <div style="display:flex;gap:24px;margin-top:8px">
+            <div><div style="font-size:10px;color:var(--text3)">Compute time</div><div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--teal)">22 min 41s</div></div>
+            <div><div style="font-size:10px;color:var(--text3)">GPU cost</div><div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--teal)">$34.20</div></div>
+            <div><div style="font-size:10px;color:var(--text3)">Conventional equiv.</div><div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--gold)">~18 months</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📉 Binding Affinity Distribution</div><button class="btn btn-ghost btn-sm" onclick="showTab('results')">Full View →</button></div>
+        <div class="card-body">
+          ${renderMiniChart()}
+          <div style="display:flex;gap:12px;margin-top:12px;font-size:11px">
+            <div style="background:rgba(0,212,200,.1);border:1px solid rgba(0,212,200,.3);border-radius:6px;padding:8px 12px;flex:1;text-align:center"><div style="color:var(--text3);margin-bottom:2px">Mean delta-G</div><div style="font-weight:800;color:var(--teal);font-family:var(--mono)">-9.7 kcal/mol</div></div>
+            <div style="background:rgba(34,201,140,.1);border:1px solid rgba(34,201,140,.3);border-radius:6px;padding:8px 12px;flex:1;text-align:center"><div style="color:var(--text3);margin-bottom:2px">Clinical range</div><div style="font-weight:800;color:var(--green);font-family:var(--mono)">-7 to -13</div></div>
+            <div style="background:rgba(244,197,66,.1);border:1px solid rgba(244,197,66,.3);border-radius:6px;padding:8px 12px;flex:1;text-align:center"><div style="color:var(--text3);margin-bottom:2px">In-range</div><div style="font-weight:800;color:var(--gold);font-family:var(--mono)">94.2%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">⭐ Top 8 Candidates — HER2 Campaign</div><button class="btn btn-ghost btn-sm" onclick="showTab('results')">View All 500 →</button></div>
+      <div class="card-body" style="padding:0">
+        <table class="data-table">
+          <thead><tr><th>Rank</th><th>ID</th><th>CDR-H3 (excerpt)</th><th>delta-G</th><th>pTM</th><th>TAP</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            ${candidates.map((c,i)=>`
+            <tr style="cursor:pointer" onclick="openDetail(${i})">
+              <td><span class="rank-badge ${i<1?'rank-1':i<2?'rank-2':i<3?'rank-3':'rank-n'}">${c.rank}</span></td>
+              <td><span style="font-family:var(--mono);font-size:11px;color:var(--blue)">${c.id}</span></td>
+              <td><span class="seq-mono">${c.cdrhThree.substring(0,14)}…</span></td>
+              <td><span class="score-pill ${c.dg<-10?'score-high':c.dg<-8?'score-med':'score-low'}">${c.dg}</span></td>
+              <td><span style="font-family:var(--mono);font-size:12px;color:${c.ptm>0.8?'var(--green)':c.ptm>0.7?'var(--gold)':'var(--red)'}">${c.ptm}</span></td>
+              <td>${c.tap.map(t=>`<span class="tap-dot ${t?'tap-pass':'tap-fail'}"></span>`).join('')}</td>
+              <td>${c.status?`<span class="status-badge ${c.status==='shortlisted'?'status-complete':'status-draft'}">${c.status}</span>`:'<span style="color:var(--text3);font-size:11px">—</span>'}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDetail(${i})">View</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderMiniChart(){
+  const bars=[3,7,14,28,52,87,112,134,61,38,14,6];
+  const maxB=Math.max(...bars);
+  return `<div style="display:flex;align-items:flex-end;gap:3px;height:70px">
+    ${bars.map((b,i)=>`<div style="flex:1;background:${i>3&&i<10?'linear-gradient(to top,var(--teal),var(--blue))':'rgba(138,167,208,.2)'};height:${Math.round(b/maxB*65)}px;border-radius:3px 3px 0 0;transition:all .3s" title="${b} candidates"></div>`).join('')}
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:4px;font-family:var(--mono)">
+    <span>-14</span><span>-12</span><span>-10</span><span>-8</span><span>-6</span>
+  </div>
+  <div style="font-size:9px;color:var(--text3);text-align:center;margin-top:2px">Predicted delta-G (kcal/mol)</div>`;
+}
+
+// ── RENDER CAMPAIGNS ─────────────────────────────────────────
+function renderCampaigns(){
+  document.getElementById('contentArea').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div><div style="font-size:17px;font-weight:800">All Campaigns</div><div style="font-size:12px;color:var(--text3);margin-top:2px">3 total · 2 complete · 1 running</div></div>
+      <button class="btn btn-primary" onclick="showTab('generate')">＋ New Campaign</button>
+    </div>
+    <div class="filter-bar">
+      <div class="filter-chip on">All</div><div class="filter-chip">Complete</div><div class="filter-chip">Running</div><div class="filter-chip">Draft</div>
+      <div class="search-box"><input placeholder="Search campaigns..." /></div>
+    </div>
+    <div style="display:grid;gap:16px">
+      ${[
+        {name:'HER2 Oncology Campaign',target:'HER2 (PDB:3N85)',status:'complete',cands:500,best:-11.2,date:'Mar 8 2026',ta:'Oncology'},
+        {name:'PD-L1 Checkpoint Inhibitor',target:'PD-L1 (PDB:5X8L)',status:'running',cands:247,best:-9.6,date:'Mar 10 2026',ta:'Immuno-oncology'},
+        {name:'EGFR Drug-Resistant Variants',target:'EGFR T790M (PDB:4I23)',status:'draft',cands:0,best:'—',date:'Mar 11 2026',ta:'Oncology'},
+      ].map(c=>`
+      <div class="campaign-card ${c.status==='complete'?'active-camp':''}">
+        <div class="camp-header">
+          <div>
+            <div class="camp-name">${c.name}</div>
+            <div class="camp-target">🎯 ${c.target}</div>
+          </div>
+          <span class="status-badge status-${c.status==='complete'?'complete':c.status==='running'?'running':'draft'}">${c.status.toUpperCase()}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0">
+          <div><div style="font-size:10px;color:var(--text3)">Candidates</div><div style="font-size:15px;font-weight:800;font-family:var(--mono);color:var(--teal)">${c.cands}</div></div>
+          <div><div style="font-size:10px;color:var(--text3)">Best delta-G</div><div style="font-size:15px;font-weight:800;font-family:var(--mono);color:var(--green)">${c.best}</div></div>
+          <div><div style="font-size:10px;color:var(--text3)">Therapeutic Area</div><div style="font-size:12px;font-weight:700;color:var(--text2)">${c.ta}</div></div>
+          <div><div style="font-size:10px;color:var(--text3)">Date</div><div style="font-size:12px;font-weight:700;color:var(--text2)">${c.date}</div></div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost btn-sm" onclick="showTab('results')">View Results</button>
+          <button class="btn btn-ghost btn-sm" onclick="showNotif('📄 Report generated')">Export Report</button>
+          ${c.status==='running'?`<span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gold);margin-left:auto"><span class="spinner"></span> Generating...</span>`:''}
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+
+// ── RENDER GENERATE ──────────────────────────────────────────
+function renderGenerate(){
+  document.getElementById('contentArea').innerHTML=`
+    <div style="max-width:720px;margin:0 auto">
+      <div style="margin-bottom:28px">
+        <div style="font-size:18px;font-weight:800;margin-bottom:6px">⚗️ Configure New Generation Run</div>
+        <div style="font-size:13px;color:var(--text3)">Define your antigen target, generation parameters, and screening criteria.</div>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><div class="card-title">1️⃣ Campaign Setup</div></div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Campaign Name</label><input class="form-input" value="VEGFR2 Angiogenesis Campaign"/></div>
+            <div class="form-group"><label class="form-label">Therapeutic Area</label><select class="form-input form-select"><option>Oncology</option><option>Autoimmune</option><option>Infectious Disease</option><option>CNS</option></select></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><div class="card-title">2️⃣ Antigen Target</div></div>
+        <div class="card-body">
+          <div class="grid-2" style="margin-bottom:16px">
+            <div class="form-group"><label class="form-label">UniProt ID</label><input class="form-input" placeholder="e.g. P35968 (VEGFR2)" value="P35968"/></div>
+            <div class="form-group"><label class="form-label">PDB Structure ID</label><input class="form-input" placeholder="e.g. 4ASD" value="4ASD"/></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Or Upload PDB File</label>
+            <div class="upload-zone" onclick="showNotif('📁 File browser opened')">
+              <div class="upload-icon">📂</div>
+              <div class="upload-text">Drop PDB file here or click to browse</div>
+              <div class="upload-sub">Supports .pdb, .cif — Max 25 MB</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Epitope Hotspot Residues (IMGT numbering, comma-separated)</label>
+            <input class="form-input" placeholder="e.g. H100, H101, H102, H103" value="H52, H53, H54, H55, H56, H100, H101"/>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><div class="card-title">3️⃣ Generation Parameters</div></div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Number of Candidates</label>
+              <select class="form-input form-select"><option>50 (Quick — ~5 min)</option><option>100 (Standard — ~10 min)</option><option selected>500 (Full — ~25 min)</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Biologic Type</label>
+              <select class="form-input form-select"><option>scFv Antibody Fragment</option><option>Full IgG Antibody</option><option>Nanobody (VHH)</option><option>Therapeutic Peptide</option></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Diversity Temperature: <span style="color:var(--teal);font-family:var(--mono)" id="tempVal">0.6</span></label>
+            <input type="range" class="form-input range-input" min="0.1" max="1.0" step="0.1" value="0.6" oninput="document.getElementById('tempVal').textContent=this.value"/>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px"><span>Conservative</span><span>Exploratory</span></div>
+          </div>
+          <div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Pre-filter by Developability</div><div class="toggle-sub">Removes candidates failing >2 TAP criteria before ranking</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Run AlphaFold2 Structure Prediction</div><div class="toggle-sub">Predict 3D structures for top-50 candidates (adds ~15 min)</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">AutoDock Vina Docking</div><div class="toggle-sub">Compute binding affinity (delta-G) via docking simulation</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px" id="genActions">
+        <button class="btn btn-primary" style="flex:2;justify-content:center;padding:14px" onclick="startGeneration()">🚀 Launch Generation Run</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="showNotif('💾 Draft saved')">Save Draft</button>
+      </div>
+      <div id="genProgressBlock" style="display:none;margin-top:20px">
+        <div class="card">
+          <div class="card-body">
+            <div style="font-size:13px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px"><span class="spinner"></span> Generation in Progress</div>
+            <div id="genSteps"></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function startGeneration(){
+  document.getElementById('genActions').style.display='none';
+  document.getElementById('genProgressBlock').style.display='block';
+  const steps=[
+    {label:'Antigen structure loading & epitope detection',time:800},
+    {label:'ESM-2 protein language model embedding',time:1200},
+    {label:'Conditional diffusion sampling (500 sequences)',time:2000},
+    {label:'AlphaFold2 structure prediction (top 50)',time:2500},
+    {label:'AutoDock Vina docking simulation',time:1800},
+    {label:'TAP developability scoring & ranking',time:900},
+  ];
+  let done=0;
+  function runStep(){
+    if(done>=steps.length){ document.getElementById('genSteps').innerHTML+=`<div style="margin-top:16px;padding:12px;background:rgba(34,201,140,.1);border:1px solid rgba(34,201,140,.3);border-radius:8px;color:var(--green);font-weight:700;font-size:13px">✅ Generation complete! 500 candidates ready. <span style="cursor:pointer;text-decoration:underline" onclick="showTab('results')">View Results →</span></div>`; return; }
+    const s=steps[done];
+    document.getElementById('genSteps').innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px" id="step-${done}"><span class="spinner"></span><span>${s.label}</span></div>`;
+    setTimeout(()=>{
+      const el=document.getElementById(`step-${done}`);
+      if(el) el.innerHTML=`<span style="color:var(--green)">✓</span><span style="color:var(--text)">${s.label}</span>`;
+      done++; runStep();
+    },s.time);
+  }
+  runStep();
+}
+
+// ── RENDER RESULTS ────────────────────────────────────────────
+function renderResults(){
+  document.getElementById('contentArea').innerHTML=`
+    <div style="margin-bottom:20px">
+      <div class="filter-bar">
+        <div class="filter-chip on" onclick="toggleChip(this)">All (500)</div>
+        <div class="filter-chip" onclick="toggleChip(this)">TAP: All Pass</div>
+        <div class="filter-chip" onclick="toggleChip(this)">delta-G < -10</div>
+        <div class="filter-chip" onclick="toggleChip(this)">Shortlisted</div>
+        <div class="search-box" style="margin-left:auto"><input placeholder="Search by ID or sequence..."/></div>
+        <button class="btn btn-ghost btn-sm" onclick="showNotif('📤 Exporting FASTA for all 500 candidates...')">📤 Export All</button>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-header"><div class="card-title">📊 Binding Affinity vs TAP Score</div></div>
+        <div class="card-body">${renderScatterSVG()}</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🎯 TAP Developability Summary</div></div>
+        <div class="card-body">
+          ${[['Hydrophobicity','78%','var(--teal)',78],['Isoelectric Point','88%','var(--green)',88],['CamSol Aggregation','65%','var(--gold)',65],['Poly-specificity','72%','var(--teal)',72],['Net Charge','81%','var(--green)',81]].map(([l,v,c,n])=>`
+          <div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--text2)">${l}</span><span style="font-family:var(--mono);font-weight:700;color:${c}">${v}</span></div>
+            <div class="progress-bar"><div class="progress-fill progress-teal" style="width:${n}%;background:${c}"></div></div>
+          </div>`).join('')}
+          <div style="margin-top:16px;padding:12px;background:rgba(0,212,200,.07);border:1px solid rgba(0,212,200,.2);border-radius:8px;text-align:center">
+            <div style="font-size:11px;color:var(--text3)">Combined Pass Rate (all 5)</div>
+            <div style="font-size:28px;font-weight:800;color:var(--teal);font-family:var(--mono)">67%</div>
+            <div style="font-size:10px;color:var(--text3)">335 / 500 candidates</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🔬 Full Candidate Table</div><div style="font-size:12px;color:var(--text3)">Showing 8 of 500 · Ranked by delta-G</div></div>
+      <div class="card-body" style="padding:0;overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Rank</th><th>ID</th><th>CDR-H3 Sequence</th><th>delta-G</th><th>pTM</th><th>ipTM</th><th>Hydrophob.</th><th>pI</th><th>TAP</th><th>Action</th></tr></thead>
+          <tbody>
+            ${candidates.map((c,i)=>`
+            <tr onclick="openDetail(${i})" style="cursor:pointer">
+              <td><span class="rank-badge ${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'}">${c.rank}</span></td>
+              <td><span style="font-family:var(--mono);font-size:11px;color:var(--blue)">${c.id}</span></td>
+              <td><span class="seq-mono">${c.cdrhThree}</span></td>
+              <td><span class="score-pill ${c.dg<-10?'score-high':c.dg<-8?'score-med':'score-low'}">${c.dg}</span></td>
+              <td style="font-family:var(--mono);color:${c.ptm>0.8?'var(--green)':c.ptm>0.7?'var(--gold)':'var(--red)'}">${c.ptm}</td>
+              <td style="font-family:var(--mono);color:var(--text2)">${(c.ptm-0.08).toFixed(2)}</td>
+              <td style="font-family:var(--mono);font-size:11px;color:${c.hydro<0?'var(--green)':'var(--gold)'}">${c.hydro.toFixed(2)}</td>
+              <td style="font-family:var(--mono);font-size:11px">${c.pi}</td>
+              <td>${c.tap.map(t=>`<span class="tap-dot ${t?'tap-pass':'tap-fail'}"></span>`).join('')} <span style="font-size:10px;color:var(--text3)">${c.tapScore}/5</span></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDetail(${i})">Detail</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        <div style="padding:12px 20px;font-size:11px;color:var(--text3);border-top:1px solid var(--border)">Showing 8 of 500 candidates · <span style="color:var(--teal);cursor:pointer" onclick="showNotif('Loading all 500 candidates...')">Load all →</span></div>
+      </div>
+    </div>`;
+}
+
+function renderScatterSVG(){
+  const pts=[[-11.2,4],[-10.8,5],[-10.4,4],[-10.1,4],[-9.8,4],[-9.5,4],[-9.2,3],[-9.0,3],[-8.8,3],[-8.4,2],[-8.0,3],[-7.8,2],[-7.5,2],[-7.2,1]];
+  const w=300,h=160,pad=30;
+  const xMin=-13,xMax=-6,yMin=0,yMax=6;
+  const xS=v=>pad+(v-xMin)/(xMax-xMin)*(w-2*pad);
+  const yS=v=>h-pad-(v-yMin)/(yMax-yMin)*(h-2*pad);
+  const dots=pts.map(([x,y])=>`<circle cx="${xS(x)}" cy="${yS(y)}" r="${4+y}" fill="${x<-10?'rgba(0,212,200,.7)':'rgba(58,123,213,.5)'}" stroke="none" opacity="0.8"/>`).join('');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="width:100%;height:auto">
+    <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h-pad}" stroke="var(--border)" stroke-width="1"/>
+    <line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="var(--border)" stroke-width="1"/>
+    ${dots}
+    <text x="${w/2}" y="${h-4}" text-anchor="middle" fill="var(--text3)" font-size="9" font-family="Space Mono">delta-G (kcal/mol)</text>
+    <text x="10" y="${h/2}" text-anchor="middle" fill="var(--text3)" font-size="9" font-family="Space Mono" transform="rotate(-90,10,${h/2})">TAP Score</text>
+    <text x="${xS(-10)}" y="${pad-4}" text-anchor="middle" fill="var(--teal)" font-size="8" font-family="Space Mono">clinical range</text>
+    <line x1="${xS(-10)}" y1="${pad}" x2="${xS(-10)}" y2="${h-pad}" stroke="rgba(0,212,200,.3)" stroke-width="1" stroke-dasharray="3,3"/>
+  </svg>`;
+}
+
+function toggleChip(el){ document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); showNotif('🔍 Filter applied'); }
+
+// ── RENDER ANALYTICS ─────────────────────────────────────────
+function renderAnalytics(){
+  document.getElementById('contentArea').innerHTML=`
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card"><div class="card-header"><div class="card-title">📈 Campaign Comparison</div></div>
+        <div class="card-body">
+          ${[['HER2','var(--teal)',-9.7,67,500],['PD-L1','var(--blue)',-9.1,58,247],['EGFR','var(--gold)',-10.3,71,0]].map(([t,c,g,p,n])=>`
+          <div style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:12px;font-weight:700">${t} Campaign</span>
+              <span style="font-size:11px;color:${c};font-family:var(--mono)">Δ ${g} | ${p}% TAP</span>
+            </div>
+            <div class="progress-bar" style="height:8px"><div style="height:100%;background:${c};border-radius:4px;width:${n?Math.round(n/5)+'%':'5%'}"></div></div>
+            <div style="font-size:10px;color:var(--text3);margin-top:3px">${n} candidates generated</div>
+          </div>`).join('')}
+          <div style="margin-top:16px;padding:12px;background:var(--bg3);border-radius:8px">
+            <div style="font-size:11px;font-weight:700;margin-bottom:8px">vs. Clinical Benchmarks</div>
+            ${[['Trastuzumab (HER2)','var(--green)',-10.8,'Approved'],['Atezolizumab (PD-L1)','var(--green)',-9.4,'Approved'],['AbG-HER2-001 (AI)','var(--teal)',-11.2,'AI-Generated']].map(([n,c,g,s])=>`
+            <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
+              <span style="font-size:11px;flex:1">${n}</span>
+              <span class="score-pill score-high">${g}</span>
+              <span style="font-size:10px;color:${c}">${s}</span>
+            </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">⏱️ Time & Cost Reduction</div></div>
+        <div class="card-body">
+          ${[['Target identification','8–12 wks','1–2 wks','80%'],['Library screening','12–16 wks','3 days','97%'],['Hit triage','8–10 wks','5 days','95%'],['Lead optimization','12–20 wks','1–2 wks','85%'],['Developability','6–8 wks','1–3 days','97%'],['TOTAL','46–66 wks','4–6 wks','90%']].map(([p,conv,ai,r],i)=>`
+          <div style="display:grid;grid-template-columns:2fr 1.2fr 1.2fr 0.8fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center;font-size:11px ${i===5?';font-weight:700':''}">
+            <span ${i===5?'style="color:var(--text)"':''} style="color:var(--text2)">${p}</span>
+            <span style="color:var(--text3);font-family:var(--mono)">${conv}</span>
+            <span style="color:var(--teal);font-family:var(--mono)">${ai}</span>
+            <span style="color:var(--green);font-family:var(--mono);font-weight:700">${r}</span>
+          </div>`).join('')}
+          <div style="margin-top:16px;display:flex;gap:12px">
+            <div style="flex:1;text-align:center;padding:12px;background:rgba(0,212,200,.07);border:1px solid rgba(0,212,200,.2);border-radius:8px">
+              <div style="font-size:10px;color:var(--text3)">Conventional Cost</div>
+              <div style="font-size:18px;font-weight:800;color:var(--red);font-family:var(--mono)">$3–8M</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:12px;background:rgba(34,201,140,.07);border:1px solid rgba(34,201,140,.2);border-radius:8px">
+              <div style="font-size:10px;color:var(--text3)">AI Pipeline Cost</div>
+              <div style="font-size:18px;font-weight:800;color:var(--green);font-family:var(--mono)">$34</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── RENDER STRUCTURE ─────────────────────────────────────────
+function renderStructure(){
+  document.getElementById('contentArea').innerHTML=`
+    <div class="card">
+      <div class="card-header"><div class="card-title">🧪 Structure Viewer — AbG-HER2-001</div>
+        <div style="display:flex;gap:8px">
+          <select class="form-input form-select btn-sm" style="width:auto;font-size:12px"><option>AbG-HER2-001</option><option>AbG-HER2-002</option><option>AbG-HER2-003</option></select>
+          <button class="btn btn-ghost btn-sm" onclick="showNotif('📥 PDB downloaded')">Download PDB</button>
+        </div>
+      </div>
+      <div class="card-body" style="display:grid;grid-template-columns:1fr 280px;gap:20px">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;min-height:380px;position:relative;overflow:hidden">
+          ${renderMolecule3D()}
+          <div style="position:absolute;bottom:12px;left:12px;display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="showNotif('🔄 Rotating view...')">⟳ Rotate</button>
+            <button class="btn btn-ghost btn-sm" onclick="showNotif('🔍 Zoomed in')">＋ Zoom</button>
+            <button class="btn btn-ghost btn-sm" onclick="showNotif('🎨 Surface view toggled')">Surface</button>
+          </div>
+          <div style="position:absolute;top:12px;right:12px;background:rgba(5,8,15,.8);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:10px">
+            <div style="color:var(--teal);margin-bottom:4px">● CDR-H3 Loop</div>
+            <div style="color:var(--blue);margin-bottom:4px">● Framework</div>
+            <div style="color:var(--gold)">● Antigen (HER2)</div>
+          </div>
+        </div>
+        <div>
+          <div class="detail-section-title">Structure Metrics</div>
+          <div style="display:grid;gap:10px;margin-bottom:16px">
+            ${[['AlphaFold pTM','0.87','var(--green)'],['ipTM (interface)','0.79','var(--green)'],['RMSD to template','1.24 Å','var(--teal)'],['Buried Surface Area','842 Å²','var(--teal)'],['H-bonds at interface','12','var(--blue)']].map(([l,v,c])=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--bg3);border-radius:6px;border:1px solid var(--border)">
+              <span style="font-size:11px;color:var(--text2)">${l}</span>
+              <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${c}">${v}</span>
+            </div>`).join('')}
+          </div>
+          <div class="detail-section-title">CDR Sequence (IMGT)</div>
+          <div class="seq-display" style="font-size:10px;line-height:2.2">
+            CDR-H1: <span class="cdr-highlight">GFTFSSYA</span><br>
+            CDR-H2: <span class="cdr-highlight">ISGSGGST</span><br>
+            CDR-H3: <span class="cdr-highlight">ARTYYCARDLGGYYSSGYDY</span>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px" onclick="showNotif('🧬 Ordering synthesis from IDT...')">Order Synthesis →</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderMolecule3D(){
+  const nodes=[];
+  for(let i=0;i<25;i++){
+    const a=i/25*Math.PI*4, r=30+Math.sin(i*0.5)*15;
+    const x=180+r*Math.cos(a)*2.2, y=190+r*Math.sin(a)+i*4-50;
+    nodes.push({x,y,c:i<8?'#00d4c8':i<18?'#3a7bd5':'#f4c542'});
+  }
+  const bonds=nodes.slice(1).map((n,i)=>`<line x1="${nodes[i].x}" y1="${nodes[i].y}" x2="${n.x}" y2="${n.y}" stroke="${n.c}" stroke-width="${i<7?2.5:1.5}" opacity="0.6"/>`).join('');
+  const dots=nodes.map(n=>`<circle cx="${n.x}" cy="${n.y}" r="${n.c==='#00d4c8'?7:n.c==='#f4c542'?9:5}" fill="${n.c}" opacity="0.85"/>`).join('');
+  return `<svg width="100%" height="380" viewBox="0 0 360 380" style="width:100%">${bonds}${dots}<text x="180" y="350" text-anchor="middle" fill="var(--text3)" font-size="11" font-family="Space Mono">AlphaFold2 — AbG-HER2-001 complex (schematic)</text></svg>`;
+}
+
+// ── RENDER BUSINESS MODEL ────────────────────────────────────
+function renderBusiness(){
+  document.getElementById('contentArea').innerHTML=`
+    <div style="margin-bottom:24px">
+      <div style="font-size:17px;font-weight:800;margin-bottom:6px">💼 AbGenAI Business Model</div>
+      <div style="font-size:13px;color:var(--text3)">Revenue architecture, pricing strategy, and market positioning for the AI biologic design platform.</div>
+    </div>
+    <div class="bm-grid" style="margin-bottom:24px">
+      ${[
+        ['🎯','Customer Segments','Mid-size pharma, biotech startups, academic labs, CROs. Total addressable market: USD 9.8B by 2028.'],
+        ['💎','Value Proposition','90% faster discovery · 95% cost reduction · Integrated developability screening · No ML expertise required.'],
+        ['📡','Channels','Self-serve SaaS · Enterprise field sales · Scientific conference presence · GitHub open-source SDK.'],
+        ['🤝','Partnerships','AWS (cloud) · Oxford OPIG/SAbDab (data) · Benchling (ELN integration) · Twist Bioscience (synthesis orders).'],
+        ['⚙️','Key Resources','Trained PLM+diffusion models · Curated SAbDab/OAS data · AWS GPU infrastructure · Computational biology IP.'],
+        ['💰','Revenue Streams','Subscriptions (80% ARR) · Pay-per-run · Custom model fine-tuning · Co-development partnerships.'],
+      ].map(([i,t,d])=>`<div class="bm-card"><div class="bm-icon">${i}</div><div class="bm-title">${t}</div><div class="bm-text">${d}</div></div>`).join('')}
+    </div>
+    <div style="margin-bottom:24px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px">💳 Pricing Tiers</div>
+      <div class="pricing-grid">
+        ${[
+          ['Explorer','$0','Free forever',['3 campaigns/mo','50 candidates','Public targets only','Community support'],false],
+          ['Starter','$499','per month',['10 campaigns/mo','500 candidates','Email support','CSV export'],false],
+          ['Professional','$2,500','per month',['Unlimited campaigns','API access','Priority GPU','Slack support','PDF reports'],true],
+          ['Enterprise','Custom','from $15K/mo',['Private VPC deploy','Custom fine-tuning','SLA guarantee','Dedicated CSM'],false],
+        ].map(([n,p,per,feats,pop])=>`
+        <div class="price-card ${pop?'featured':''}">
+          <div class="price-name">${n}</div>
+          <div class="price-val">${p}</div>
+          <div class="price-period">${per}</div>
+          <div class="price-features">${feats.map(f=>`<div class="price-feat">${f}</div>`).join('')}</div>
+          <button class="btn ${pop?'btn-primary':'btn-ghost'} btn-sm" style="width:100%;justify-content:center;margin-top:14px" onclick="showNotif('📧 Sales team notified')">Get Started</button>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 3-Year Financial Projections</div></div>
+      <div class="card-body" style="padding:0;overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Metric</th><th>Year 1</th><th>Year 2</th><th>Year 3</th></tr></thead>
+          <tbody>
+            ${[['Paying Clients','30','120','280'],['ARPU (Annual)','$8,000','$12,000','$18,000'],['ARR','$240K','$1.44M','$5.04M'],['Gross Margin','72%','78%','83%'],['Total OpEx','$867K','$1.8M','$3.2M'],['EBITDA','–$627K','–$360K','+$1.84M'],['Break-Even','—','~Month 22','Profitable']].map(([m,...y])=>`
+            <tr><td style="font-weight:600;color:var(--text)">${m}</td>${y.map(v=>`<td style="font-family:var(--mono);color:${v.startsWith('-')?'var(--red)':v.startsWith('+')?'var(--green)':'var(--teal)'}">${v}</td>`).join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ── RENDER API ────────────────────────────────────────────────
+function renderAPI(){
+  document.getElementById('contentArea').innerHTML=`
+    <div class="grid-2">
+      <div>
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><div class="card-title">🔑 API Credentials</div></div>
+          <div class="card-body">
+            <div class="form-group"><label class="form-label">API Key</label><input class="form-input" value="abg_live_sk_••••••••••••••••••••" type="password"/></div>
+            <div class="form-group"><label class="form-label">Endpoint</label><input class="form-input" value="https://api.abgenai.io/v1" readonly/></div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-ghost btn-sm" onclick="showNotif('🔑 API key copied')">Copy Key</button>
+              <button class="btn btn-ghost btn-sm" onclick="showNotif('🔄 New key generated')">Regenerate</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 API Usage This Month</div></div>
+          <div class="card-body">
+            ${[['Generation Runs','12 / 50','24%'],['Candidates Returned','6,000 / 25,000','24%'],['Structure Predictions','600 / 2,500','24%'],['API Calls (Total)','1,247 / 10,000','12%']].map(([l,v,p])=>`
+            <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--text2)">${l}</span><span style="font-family:var(--mono);color:var(--teal)">${v}</span></div><div class="progress-bar"><div class="progress-fill progress-teal" style="width:${p}"></div></div></div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📖 Quick Start — REST API</div></div>
+        <div class="card-body">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;font-family:var(--mono);font-size:11px;line-height:2;overflow-x:auto">
+            <div style="color:var(--text3)"># Submit a generation run</div>
+            <div><span style="color:var(--teal)">POST</span> <span style="color:var(--text)">https://api.abgenai.io/v1/generate</span></div>
+            <div style="color:var(--text3);margin-top:8px"># Headers</div>
+            <div><span style="color:var(--gold)">Authorization:</span> <span style="color:var(--text2)">Bearer YOUR_API_KEY</span></div>
+            <div><span style="color:var(--gold)">Content-Type:</span> <span style="color:var(--text2)">application/json</span></div>
+            <div style="color:var(--text3);margin-top:8px"># Request body</div>
+            <div><span style="color:var(--blue)">{</span></div>
+            <div>&nbsp;&nbsp;<span style="color:var(--teal)">"target_uniprot"</span>: <span style="color:var(--green)">"P04637"</span>,</div>
+            <div>&nbsp;&nbsp;<span style="color:var(--teal)">"n_candidates"</span>: <span style="color:var(--gold)">500</span>,</div>
+            <div>&nbsp;&nbsp;<span style="color:var(--teal)">"biologic_type"</span>: <span style="color:var(--green)">"scFv"</span>,</div>
+            <div>&nbsp;&nbsp;<span style="color:var(--teal)">"tap_prefilter"</span>: <span style="color:var(--gold)">true</span>,</div>
+            <div>&nbsp;&nbsp;<span style="color:var(--teal)">"alphafold_predict"</span>: <span style="color:var(--gold)">true</span></div>
+            <div><span style="color:var(--blue)">}</span></div>
+            <div style="color:var(--text3);margin-top:8px"># Response</div>
+            <div><span style="color:var(--blue)">{</span></div>
+            <div>&nbsp;&nbsp;<span style="color:var(--teal)">"run_id"</span>: <span style="color:var(--green)">"run_xk9f2m3a"</span>,</div>
+            <div>&nbsp;&nbsp;<span style="color:var(--teal)">"status"</span>: <span style="color:var(--green)">"queued"</span>,</div>
+            <div>&nbsp;&nbsp;<span style="color:var(--teal)">"eta_minutes"</span>: <span style="color:var(--gold)">25</span></div>
+            <div><span style="color:var(--blue)">}</span></div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:10px">
+            <button class="btn btn-primary btn-sm" onclick="showNotif('✅ Test API call successful — run_id: run_demo123')">▶ Test API Call</button>
+            <button class="btn btn-ghost btn-sm" onclick="showNotif('📖 Full docs opened')">Full Docs →</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── RENDER SETTINGS ───────────────────────────────────────────
+function renderSettings(){
+  document.getElementById('contentArea').innerHTML=`
+    <div style="max-width:640px;margin:0 auto">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><div class="card-title">👤 Profile & Account</div></div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" value="Dr. Researcher"/></div>
+            <div class="form-group"><label class="form-label">Institution</label><input class="form-input" value="BioPharmaCorp"/></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" value="researcher@biopharma.com"/></div>
+            <div class="form-group"><label class="form-label">Role</label><select class="form-input form-select"><option>Computational Biologist</option><option>Medicinal Chemist</option><option>Research Director</option></select></div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="showNotif('✅ Profile saved')">Save Changes</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">⚙️ Platform Preferences</div></div>
+        <div class="card-body">
+          ${[['Email notifications for completed runs','on'],['Slack webhook alerts','off'],['Auto-run AlphaFold2 on top-50','on'],['Include TAP pre-filter by default','on'],['Share anonymized usage data','off']].map(([l,s])=>`
+          <div class="toggle-row"><div class="toggle-label">${l}</div><div class="toggle ${s}" onclick="this.classList.toggle('on');showNotif('✅ Setting updated')"></div></div>`).join('')}
+          <div style="margin-top:16px;display:flex;gap:10px">
+            <button class="btn btn-primary btn-sm" onclick="showNotif('✅ Preferences saved')">Save Preferences</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+window.onload = function(){
+  // Animate progress bars after a short delay
+  setTimeout(()=>{
+    document.querySelectorAll('.progress-fill').forEach(el=>{
+      const w=el.style.width; el.style.width='0'; 
+      setTimeout(()=>{ el.style.width=w; },100);
+    });
+  },200);
+};
+</script>
+</body>
+</html>
